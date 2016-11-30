@@ -1,9 +1,9 @@
 {
   "name": "deluxo/worldpay-corp",
   "description": "WorldPay.com corporate xml api",
-  "version": "1.0.0",
+  "version": "1.0.1-stable",
   "autoload": {
-    "psr-4": {"Wpc\\": "lib/"}
+    "psr-4": {"Worldpaycorp\\": "lib/"}
   },
   "require": {
     "php": "^5.3.3 || ^7.0"
