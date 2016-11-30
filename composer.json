@@ -1,7 +1,7 @@
 {
   "name": "deluxo/worldpay-corp",
   "description": "WorldPay.com corporate xml api",
-  "version": "1.0.1-stable",
+  "version": "1.0.1",
   "autoload": {
     "psr-4": {"Worldpaycorp\\": "lib/"}
   },
