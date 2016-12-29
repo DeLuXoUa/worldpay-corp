@@ -143,12 +143,11 @@ class Core
         return json_decode(json_encode($xmlData), true);
     }
 
-    public function validateIpn($ipn, $status = false)
+    public function validateIpn($ipn)
     {
-        $decIpn = json_decode($ipn);
-        if (!is_object($decIpn))
+        if (!is_array($ipn))
             return false;
-        return $this->checkOrder($decIpn->OrderCode, $status);
+        return $this->checkOrder($ipn['OrderCode'], $ipn['PaymentStatus']);
     }
 
     public function createOrder($orderId, $description, $amount, $buyerEmail, $billAdress, $billPostalCode, $billCity, $currencyCode = 'GBP', $billCountryCode = 'GB')
@@ -169,7 +168,8 @@ class Core
     public function checkOrder(string $orderId, $status = false)
     {
         $order = $this->orderStatus($orderId);
-        if ($order && isset($order['reply']['orderStatus']['payment']) && $order['reply']['orderStatus']['payment']['lastEvent'] == $status ? $status : 'CAPTURED')
+        $status = $status ? $status : 'CAPTURED';
+        if ($order && isset($order['reply']['orderStatus']['payment']) && $order['reply']['orderStatus']['payment']['lastEvent'] == $status)
             return true;
         return false;
     }
