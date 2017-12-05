@@ -31,7 +31,7 @@ class Core
         $implementation = new \DOMImplementation();
 
         $domtree = new \DOMDocument('1.0', 'UTF-8');
-        $domtree->appendChild($implementation->createDocumentType('paymentService PUBLIC "-//Worldpay//DTD Worldpay PaymentService v1//EN" 
+        $domtree->appendChild($implementation->createDocumentType('paymentService PUBLIC "-//WorldPay/DTD WorldPay PaymentService v1//EN"
   "http://dtd.worldpay.com/paymentService_v1.dtd"'));
 
         $paymentService = $domtree->createElement('paymentService');
@@ -76,7 +76,7 @@ class Core
             $payAtr->value = $this->envConfig['installationId'];
             $order->appendChild($payAtr);
 
-            $order->appendChild($domtree->createElement('description', $data['description']));
+            $order->appendChild($domtree->createElement('description', '### ' . $data['description']));
 
             $amount = $domtree->createElement('amount');
             $payAtr = $domtree->createAttribute('currencyCode');
@@ -90,6 +90,11 @@ class Core
             $amount->appendChild($payAtr);
             $order->appendChild($amount);
 
+            $orderContent = $domtree->createElement('orderContent');
+            $CDATA = $domtree->createCDATASection('');
+            $orderContent->appendChild($CDATA);
+            $order->appendChild($orderContent);
+
             $paymentMethodMask = $domtree->createElement('paymentMethodMask');
             $include = $domtree->createElement('include');
             $payAtr = $domtree->createAttribute('code');
@@ -98,15 +103,18 @@ class Core
             $paymentMethodMask->appendChild($include);
             $order->appendChild($paymentMethodMask);
 
+
             $shopper = $domtree->createElement('shopper');
             $shopperEmailAddress = $domtree->createElement('shopperEmailAddress', $data['email']);
             $shopper->appendChild($shopperEmailAddress);
             $order->appendChild($shopper);
 
-            $billingAddress = $domtree->createElement('billingAddress');
+            $billingAddress = $domtree->createElement('shippingAddress');
             $address = $domtree->createElement('address');
             $billingAddress->appendChild($address);
-            $address->appendChild($domtree->createElement('address1', $data['address1']));
+            $address->appendChild($domtree->createElement('firstName', $data['firstName']));
+            $address->appendChild($domtree->createElement('lastName', $data['lastName']));
+            $address->appendChild($domtree->createElement('street', htmlentities(mb_substr($data['address1'], 0, 60))));
             $address->appendChild($domtree->createElement('postalCode', $data['postalCode']));
             $address->appendChild($domtree->createElement('city', $data['city']));
             $address->appendChild($domtree->createElement('countryCode', $data['countryCode']));
@@ -150,7 +158,7 @@ class Core
         return $this->checkOrder($ipn['OrderCode'], $ipn['PaymentStatus']);
     }
 
-    public function createOrder($orderId, $description, $amount, $buyerEmail, $billAdress, $billPostalCode, $billCity, $currencyCode = 'GBP', $billCountryCode = 'GB')
+    public function createOrder($orderId, $description, $amount, $buyerEmail, $billAdress, $billPostalCode, $billCity, $currencyCode = 'GBP', $billCountryCode = 'GB', $additionalData = null)
     {
         $data['description'] = $description;
         $data['currencyCode'] = $currencyCode;
@@ -160,6 +168,8 @@ class Core
         $data['city'] = $billCity;
         $data['countryCode'] = $billCountryCode;
         $data['email'] = $buyerEmail;
+        $data['firstName'] = isset($additionalData['firstName']) ? $additionalData['firstName'] : 'NoName';
+        $data['lastName'] = isset($additionalData['lastName']) ? $additionalData['lastName'] : 'NoName';
 
         $this->generateXml($orderId, $data);
         return $this->query();
